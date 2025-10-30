@@ -1,1752 +1,2544 @@
-
-// GreenRoots Enhanced JavaScript with Super Animations and Interactive Tree Map
-// =====================================================================
-
-// Global variables
-let map, treeMarkers = [], currentLocation = null;
-let typewriterIndex = 0;
-let treeData = [];
-let animationFrame;
-
-// Quotes for typewriter animation
-const quotes = [
-  "Every tree planted is a promise to future generations",
-  "Be the change you wish to see in the world",
-  "The earth does not belong to us; we belong to the earth",
-  "In every walk with nature, one receives far more than they seek"
-];
-
-// Sample tree data for Mumbai
-const sampleTreeData = [
-  {id: 1, lat: 19.0760, lng: 72.8777, species: 'Mango', planter: 'Arjun Sharma', date: '2024-10-15', native: true, type: 'mature'},
-  {id: 2, lat: 19.0596, lng: 72.8295, species: 'Neem', planter: 'Priya Patel', date: '2024-10-20', native: true, type: 'new'},
-  {id: 3, lat: 19.1176, lng: 72.9060, species: 'Banyan', planter: 'Mumbai Green Club', date: '2024-09-30', native: true, type: 'mature'},
-  {id: 4, lat: 19.0330, lng: 72.8697, species: 'Gulmohar', planter: 'Ravi Kumar', date: '2024-10-25', native: false, type: 'new'},
-  {id: 5, lat: 19.0825, lng: 72.8428, species: 'Coconut', planter: 'Coastal Care Team', date: '2024-10-10', native: false, type: 'mature'},
-  {id: 6, lat: 19.0544, lng: 72.8326, species: 'Neem', planter: 'Sneha Joshi', date: '2024-10-28', native: true, type: 'new'},
-  {id: 7, lat: 19.1197, lng: 72.8464, species: 'Mango', planter: 'Green Warriors', date: '2024-09-15', native: true, type: 'mature'},
-  {id: 8, lat: 19.0176, lng: 72.8562, species: 'Banyan', planter: 'Nature Lovers', date: '2024-10-01', native: true, type: 'mature'}
-];
-
-// DOM Content Loaded Event
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-});
-
-// Initialize Application
-function initializeApp() {
-    console.log('🌱 GreenRoots Application Initializing...');
-    
-    // Initialize all components
-    initializeLoadingScreen();
-    initializeScrollAnimations();
-    initializeTypewriter();
-    initializeCounters();
-    initializeThemeToggle();
-    initializeNavigation();
-    initializeMap();
-    initializeEventListeners();
-    initializeParallaxEffects();
-    initializeMagneticButtons();
-    initializeFloatingElements();
-    initializeProgressBars();
-    
-    console.log('✅ GreenRoots Application Initialized Successfully!');
+:root {
+  --primary-color: #228B22;
+  --primary-dark: #1c6e1c;
+  --primary-light: #4caf50;
+  --secondary-color: #f9b233;
+  --secondary-dark: #e09a15;
+  --accent-color: #00bcd4;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-light: #999;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fdf7;
+  --bg-tertiary: #f5f5f5;
+  --border-color: #e0e0e0;
+  --shadow-light: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 20px rgba(0,0,0,0.15);
+  --shadow-heavy: 0 8px 30px rgba(0,0,0,0.2);
+  --gradient-primary: linear-gradient(135deg, #228B22, #4caf50);
+  --gradient-secondary: linear-gradient(135deg, #f9b233, #ff9800);
+  --gradient-bg: linear-gradient(180deg, #f8fdf7, #ffffff);
+  --border-radius: 12px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-// =====================================================================
-// LOADING SCREEN & INITIAL ANIMATIONS
-// =====================================================================
 
-function initializeLoadingScreen() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    
-    // Enhanced loading animation sequence
-    setTimeout(() => {
-        // Add growing animation to tree
-        const treeAnimation = document.querySelector('.tree-animation');
-        if (treeAnimation) {
-            treeAnimation.style.transform = 'scale(1.2)';
-            treeAnimation.style.transition = 'transform 0.5s ease';
-        }
-        
-        // Simulate realistic loading progress
-        const progressBar = document.querySelector('.loading-progress');
-        if (progressBar) {
-            progressBar.style.width = '100%';
-        }
-        
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-            initializeEntryAnimations();
-        }, 2500);
-        
-    }, 1500);
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-light: #888;
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3d3d3d;
+  --border-color: #404040;
+  --shadow-light: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-medium: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-heavy: 0 8px 30px rgba(0,0,0,0.5);
+  --gradient-bg: linear-gradient(180deg, #1a1a1a, #2d2d2d);
 }
 
-function initializeEntryAnimations() {
-    // Staggered entry animations for main elements
-    const elementsToAnimate = [
-        { selector: '.hero-content', delay: 300 },
-        { selector: '.hero-visual', delay: 600 },
-        { selector: '.stats-section', delay: 900 },
-        { selector: '.navbar', delay: 100 }
-    ];
-    
-    elementsToAnimate.forEach(({ selector, delay }) => {
-        setTimeout(() => {
-            const element = document.querySelector(selector);
-            if (element) {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-                element.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-            }
-        }, delay);
-    });
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-// =====================================================================
-// TYPEWRITER ANIMATION
-// =====================================================================
-
-function initializeTypewriter() {
-    const typewriterElement = document.getElementById('typewriter');
-    if (!typewriterElement) return;
-    
-    let currentQuoteIndex = 0;
-    let currentCharIndex = 0;
-    let isDeleting = false;
-    
-    function type() {
-        const currentQuote = quotes[currentQuoteIndex];
-        
-        if (isDeleting) {
-            typewriterElement.textContent = currentQuote.substring(0, currentCharIndex - 1);
-            currentCharIndex--;
-        } else {
-            typewriterElement.textContent = currentQuote.substring(0, currentCharIndex + 1);
-            currentCharIndex++;
-        }
-        
-        let typeSpeed = isDeleting ? 50 : 100; // Faster when deleting
-        
-        if (!isDeleting && currentCharIndex === currentQuote.length) {
-            typeSpeed = 2000; // Pause at end
-            isDeleting = true;
-        } else if (isDeleting && currentCharIndex === 0) {
-            isDeleting = false;
-            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
-            typeSpeed = 500; // Pause before next quote
-        }
-        
-        setTimeout(type, typeSpeed);
-    }
-    
-    // Start typewriter animation
-    setTimeout(type, 1000);
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
 }
 
-// =====================================================================
-// ANIMATED COUNTERS
-// =====================================================================
-
-function initializeCounters() {
-    const counterElements = document.querySelectorAll('.stat-number');
-    
-    const observerOptions = {
-        threshold: 0.5,
-        rootMargin: '-50px'
-    };
-    
-    const counterObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !entry.target.dataset.counted) {
-                animateCounter(entry.target);
-                entry.target.dataset.counted = 'true';
-            }
-        });
-    }, observerOptions);
-    
-    counterElements.forEach(element => {
-        counterObserver.observe(element);
-    });
+body {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+  line-height: 1.6;
+  background: var(--gradient-bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: var(--transition);
 }
 
-function animateCounter(element) {
-    const target = parseInt(element.dataset.count);
-    const duration = 2000;
-    const step = target / (duration / 16);
-    let current = 0;
-    
-    const timer = setInterval(() => {
-        current += step;
-        if (current >= target) {
-            current = target;
-            clearInterval(timer);
-        }
-        element.textContent = Math.floor(current).toLocaleString();
-    }, 16);
-    
-    // Animate progress bar too
-    const progressBar = element.parentNode.querySelector('.stat-bar');
-    if (progressBar) {
-        const width = progressBar.dataset.width;
-        setTimeout(() => {
-            progressBar.style.width = width;
-        }, 500);
-    }
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+/* Dark Mode Text Enhancements */
+[data-theme="dark"] {
+  --primary-color: #4caf50;
+  --primary-dark: #388e3c;
+  --primary-light: #66bb6a;
+  --secondary-color: #ffb74d;
+  --secondary-dark: #ffa726;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-light: #b0b0b0;
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2a2a2a;
+  --border-color: rgba(76, 175, 80, 0.3);
+  --shadow-light: 0 2px 8px rgba(76, 175, 80, 0.2);
+  --shadow-medium: 0 4px 20px rgba(76, 175, 80, 0.3);
+  --shadow-heavy: 0 8px 30px rgba(76, 175, 80, 0.4);
+  --gradient-bg: linear-gradient(180deg, #0a1f0a, #1a1a1a);
+  --gradient-primary: linear-gradient(135deg, #2e7d32, #4caf50);
+  --gradient-secondary: linear-gradient(135deg, #ff9800, #ffb74d);
 }
 
-// =====================================================================
-// THEME TOGGLE
-// =====================================================================
-
-function initializeThemeToggle() {
-    const themeToggle = document.getElementById('themeToggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    
-    // Set initial theme
-    if (currentTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    }
-    
-    themeToggle.addEventListener('click', () => {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        
-        if (isDark) {
-            document.documentElement.removeAttribute('data-theme');
-            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-            localStorage.setItem('theme', 'light');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            localStorage.setItem('theme', 'dark');
-        }
-        
-        // Add rotation animation
-        themeToggle.style.transform = 'rotate(360deg)';
-        setTimeout(() => {
-            themeToggle.style.transform = 'rotate(0deg)';
-        }, 300);
-    });
+/* Dark mode body background */
+[data-theme="dark"] body {
+  background: var(--gradient-bg);
+  color: var(--text-primary);
 }
 
-// =====================================================================
-// NAVIGATION & SMOOTH SCROLLING
-// =====================================================================
-
-function initializeNavigation() {
-    // Smooth scrolling for navigation links
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute('href').substring(1);
-            const targetSection = document.getElementById(targetId);
-            
-            if (targetSection) {
-                const headerHeight = document.querySelector('.header').offsetHeight;
-                const targetPosition = targetSection.offsetTop - headerHeight - 20;
-                
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-                
-                // Add active class animation
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-            }
-        });
-    });
-    
-    // Scroll-based navigation highlighting
-    window.addEventListener('scroll', throttle(updateActiveNavigation, 100));
+/* Dark mode header */
+[data-theme="dark"] .header {
+  background: rgba(18, 18, 18, 0.95);
+  border-bottom: 1px solid rgba(76, 175, 80, 0.3);
 }
 
-function updateActiveNavigation() {
-    const sections = document.querySelectorAll('section[id]');
-    const scrollPosition = window.scrollY + 200;
-    
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionBottom = sectionTop + section.offsetHeight;
-        const sectionId = section.getAttribute('id');
-        const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-        
-        if (scrollPosition >= sectionTop && scrollPosition <= sectionBottom) {
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            if (navLink) navLink.classList.add('active');
-        }
-    });
+/* Dark mode navigation links */
+[data-theme="dark"] .nav-link {
+  color: var(--text-primary);
 }
 
-// =====================================================================
-// INTERACTIVE MAP INITIALIZATION
-// =====================================================================
-
-function initializeMap() {
-    // Initialize Leaflet map centered on Mumbai
-    map = L.map('mumbai-map').setView([19.0760, 72.8777], 11);
-    
-    // Add beautiful tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
-    
-    // Custom icons for different tree types
-    const treeIcons = {
-        new: L.divIcon({
-            className: 'custom-tree-marker new-tree-marker',
-            html: '<i class="fas fa-seedling"></i>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        }),
-        mature: L.divIcon({
-            className: 'custom-tree-marker mature-tree-marker',
-            html: '<i class="fas fa-tree"></i>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        }),
-        native: L.divIcon({
-            className: 'custom-tree-marker native-tree-marker',
-            html: '<i class="fas fa-leaf"></i>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        })
-    };
-    
-    // Add custom CSS for markers
-    const markerStyles = `
-        .custom-tree-marker {
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            border: 3px solid;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        .custom-tree-marker:hover {
-            transform: scale(1.2);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .new-tree-marker {
-            border-color: #4caf50;
-            color: #4caf50;
-        }
-        .mature-tree-marker {
-            border-color: #228B22;
-            color: #228B22;
-        }
-        .native-tree-marker {
-            border-color: #f9b233;
-            color: #f9b233;
-        }
-    `;
-    
-    // Add styles to document
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = markerStyles;
-    document.head.appendChild(styleSheet);
-    
-    // Load and display tree data
-    treeData = [...sampleTreeData];
-    displayTreeMarkers();
-    
-    // Map controls
-    initializeMapControls();
-    
-    // Map click event for adding new trees
-    map.on('click', onMapClick);
-    
-    // Update map statistics
-    updateMapStats();
+[data-theme="dark"] .nav-link:hover {
+  color: white;
 }
 
-function displayTreeMarkers(filter = 'all') {
-    // Clear existing markers
-    treeMarkers.forEach(marker => map.removeLayer(marker));
-    treeMarkers = [];
-    
-    // Filter trees based on selection
-    let filteredTrees = treeData;
-    
-    switch(filter) {
-        case 'recent':
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            filteredTrees = treeData.filter(tree => new Date(tree.date) >= thirtyDaysAgo);
-            break;
-        case 'native':
-            filteredTrees = treeData.filter(tree => tree.native);
-            break;
-    }
-    
-    // Add markers for filtered trees
-    filteredTrees.forEach(tree => {
-        const markerType = tree.native ? 'native' : tree.type;
-        const icon = markerType === 'native' ? 
-            L.divIcon({
-                className: 'custom-tree-marker native-tree-marker',
-                html: '<i class="fas fa-leaf"></i>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            }) : 
-            (tree.type === 'new' ? 
-                L.divIcon({
-                    className: 'custom-tree-marker new-tree-marker',
-                    html: '<i class="fas fa-seedling"></i>',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
-                }) :
-                L.divIcon({
-                    className: 'custom-tree-marker mature-tree-marker',
-                    html: '<i class="fas fa-tree"></i>',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
-                })
-            );
-        
-        const marker = L.marker([tree.lat, tree.lng], { icon })
-            .addTo(map)
-            .bindPopup(createTreePopup(tree));
-        
-        // Add pulsing animation for new trees
-        if (tree.type === 'new') {
-            marker.on('add', function() {
-                setTimeout(() => {
-                    const markerElement = marker.getElement();
-                    if (markerElement) {
-                        markerElement.style.animation = 'pulse 2s infinite';
-                    }
-                }, 100);
-            });
-        }
-        
-        treeMarkers.push(marker);
-    });
-    
-    // Add pulse animation CSS
-    if (!document.querySelector('#pulse-animation')) {
-        const pulseStyle = document.createElement('style');
-        pulseStyle.id = 'pulse-animation';
-        pulseStyle.textContent = `
-            @keyframes pulse {
-                0% { transform: scale(1); opacity: 1; }
-                50% { transform: scale(1.1); opacity: 0.8; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(pulseStyle);
-    }
+/* Dark mode sections */
+[data-theme="dark"] .mission-section,
+[data-theme="dark"] .stats-section,
+[data-theme="dark"] .plant-section,
+[data-theme="dark"] .events-section,
+[data-theme="dark"] .pledge-section,
+[data-theme="dark"] .contact-section {
+  background: var(--bg-primary);
 }
 
-function createTreePopup(tree) {
-    const plantedDate = new Date(tree.date).toLocaleDateString('en-IN');
-    const daysAgo = Math.floor((new Date() - new Date(tree.date)) / (1000 * 60 * 60 * 24));
-    
-    return `
-        <div class="tree-popup">
-            <div class="popup-header">
-                <h3>${tree.species}</h3>
-                <span class="tree-badge ${tree.native ? 'native' : 'regular'}">${tree.native ? 'Native' : 'Regular'}</span>
-            </div>
-            <div class="popup-content">
-                <p><i class="fas fa-user"></i> <strong>Planted by:</strong> ${tree.planter}</p>
-                <p><i class="fas fa-calendar"></i> <strong>Date:</strong> ${plantedDate}</p>
-                <p><i class="fas fa-clock"></i> <strong>Age:</strong> ${daysAgo} days old</p>
-                <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> ${tree.lat.toFixed(4)}, ${tree.lng.toFixed(4)}</p>
-            </div>
-            <div class="popup-actions">
-                <button onclick="viewTreeDetails(${tree.id})" class="popup-btn">
-                    <i class="fas fa-info-circle"></i> Details
-                </button>
-                <button onclick="shareTree(${tree.id})" class="popup-btn">
-                    <i class="fas fa-share"></i> Share
-                </button>
-            </div>
-        </div>
-    `;
+/* Dark mode mission text */
+[data-theme="dark"] .mission-description {
+  color: var(--text-primary);
 }
 
-// Add popup styles
-const popupStyles = `
-    .tree-popup {
-        min-width: 250px;
-        font-family: inherit;
-    }
-    .popup-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #eee;
-    }
-    .popup-header h3 {
-        margin: 0;
-        color: #228B22;
-        font-size: 1.1em;
-    }
-    .tree-badge {
-        font-size: 0.8em;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: bold;
-    }
-    .tree-badge.native {
-        background: #f9b233;
-        color: white;
-    }
-    .tree-badge.regular {
-        background: #4caf50;
-        color: white;
-    }
-    .popup-content p {
-        margin: 5px 0;
-        font-size: 0.9em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .popup-content i {
-        color: #228B22;
-        width: 12px;
-    }
-    .popup-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 10px;
-        padding-top: 8px;
-        border-top: 1px solid #eee;
-    }
-    .popup-btn {
-        flex: 1;
-        padding: 6px 12px;
-        border: none;
-        border-radius: 6px;
-        background: #228B22;
-        color: white;
-        font-size: 0.8em;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-    }
-    .popup-btn:hover {
-        background: #1c6e1c;
-        transform: translateY(-1px);
-    }
-`;
-
-// Add popup styles to document
-const popupStyleSheet = document.createElement('style');
-popupStyleSheet.textContent = popupStyles;
-document.head.appendChild(popupStyleSheet);
-
-function initializeMapControls() {
-    const controlButtons = document.querySelectorAll('.control-btn');
-    
-    controlButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active class from all buttons
-            controlButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            button.classList.add('active');
-            
-            // Get filter type and update markers
-            const filter = button.dataset.filter;
-            displayTreeMarkers(filter);
-            
-            // Update statistics
-            updateMapStats(filter);
-            
-            // Add click animation
-            button.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                button.style.transform = 'scale(1)';
-            }, 100);
-        });
-    });
+/* Dark mode feature items */
+[data-theme="dark"] .feature-item {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
-function updateMapStats(filter = 'all') {
-    let filteredTrees = treeData;
-    
-    switch(filter) {
-        case 'recent':
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            filteredTrees = treeData.filter(tree => new Date(tree.date) >= thirtyDaysAgo);
-            break;
-        case 'native':
-            filteredTrees = treeData.filter(tree => tree.native);
-            break;
-    }
-    
-    const totalTrees = filteredTrees.length;
-    const activeAreas = new Set(filteredTrees.map(tree => `${Math.floor(tree.lat * 10)}_${Math.floor(tree.lng * 10)}`)).size;
-    
-    // Animate count changes
-    const totalTreesElement = document.getElementById('totalTrees');
-    const activeAreasElement = document.getElementById('activeAreas');
-    
-    animateNumber(totalTreesElement, totalTrees);
-    animateNumber(activeAreasElement, activeAreas);
+[data-theme="dark"] .feature-item:hover {
+  background: var(--bg-tertiary);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
 
-function animateNumber(element, targetValue) {
-    const startValue = parseInt(element.textContent) || 0;
-    const duration = 500;
-    const step = (targetValue - startValue) / (duration / 16);
-    let currentValue = startValue;
-    
-    const timer = setInterval(() => {
-        currentValue += step;
-        if ((step > 0 && currentValue >= targetValue) || (step < 0 && currentValue <= targetValue)) {
-            currentValue = targetValue;
-            clearInterval(timer);
-        }
-        element.textContent = Math.round(currentValue);
-    }, 16);
+[data-theme="dark"] .feature-item span {
+  color: var(--text-primary);
 }
 
-function onMapClick(e) {
-    currentLocation = e.latlng;
-    
-    // Update coordinates in the form
-    document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
-    document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
-    
-    // Show modal
-    openModal('addTreeModal');
-    
-    // Add a temporary marker
-    if (window.tempMarker) {
-        map.removeLayer(window.tempMarker);
-    }
-    
-    window.tempMarker = L.marker([e.latlng.lat, e.latlng.lng], {
-        icon: L.divIcon({
-            className: 'temp-tree-marker',
-            html: '<i class="fas fa-plus"></i>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        })
-    }).addTo(map);
-    
-    // Style for temporary marker
-    if (!document.querySelector('#temp-marker-style')) {
-        const tempStyle = document.createElement('style');
-        tempStyle.id = 'temp-marker-style';
-        tempStyle.textContent = `
-            .temp-tree-marker {
-                background: #ff9800;
-                border: 3px solid white;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-size: 14px;
-                box-shadow: 0 2px 10px rgba(255, 152, 0, 0.5);
-                animation: bounce 1s infinite;
-            }
-            @keyframes bounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-5px); }
-            }
-        `;
-        document.head.appendChild(tempStyle);
-    }
+/* Dark mode cards */
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .plant-card,
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .contact-item {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  color: var(--text-primary);
 }
 
-// =====================================================================
-// MODAL FUNCTIONALITY
-// =====================================================================
-
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        
-        // Focus trap
-        const focusableElements = modal.querySelectorAll('input, select, textarea, button');
-        if (focusableElements.length > 0) {
-            focusableElements[0].focus();
-        }
-    }
+[data-theme="dark"] .stat-card:hover,
+[data-theme="dark"] .plant-card:hover,
+[data-theme="dark"] .event-card:hover {
+  background: var(--bg-tertiary);
 }
 
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-        
-        // Remove temporary marker
-        if (window.tempMarker) {
-            map.removeLayer(window.tempMarker);
-            window.tempMarker = null;
-        }
-    }
+/* Dark mode text elements */
+[data-theme="dark"] .section-title {
+  color: var(--primary-light);
 }
 
-// =====================================================================
-// FORM HANDLING
-// =====================================================================
-
-function initializeEventListeners() {
-    // Add tree form submission
-    const addTreeForm = document.getElementById('addTreeForm');
-    if (addTreeForm) {
-        addTreeForm.addEventListener('submit', handleAddTree);
-    }
-    
-    // Pledge form submission
-    const pledgeForm = document.querySelector('.pledge-form');
-    if (pledgeForm) {
-        pledgeForm.addEventListener('submit', handlePledgeSubmission);
-    }
-    // Event registration form submission
-const eventRegistrationForm = document.getElementById('eventRegistrationForm');
-if (eventRegistrationForm) {
-  eventRegistrationForm.addEventListener('submit', handleEventRegistration);
-}
-    // Contact form submission
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', handleContactSubmission);
-    }
-    
-    // Individual planting form submission
-    const individualPlantForm = document.getElementById('individualPlantForm');
-    if (individualPlantForm) {
-        individualPlantForm.addEventListener('submit', handleIndividualPlanting);
-    }
-    
-    // Community drive form submission
-    const communityDriveForm = document.getElementById('communityDriveForm');
-    if (communityDriveForm) {
-        communityDriveForm.addEventListener('submit', handleCommunityDrive);
-        
-        // Add dynamic field visibility based on action selection
-        const communityAction = document.getElementById('communityAction');
-        if (communityAction) {
-            communityAction.addEventListener('change', handleCommunityActionChange);
-        }
-    }
-    
-    // Corporate partnership form submission
-    const corporatePartnershipForm = document.getElementById('corporatePartnershipForm');
-    if (corporatePartnershipForm) {
-        corporatePartnershipForm.addEventListener('submit', handleCorporatePartnership);
-    }
-    
-    // Floating Action Button
-    const fab = document.getElementById('plantTreeFab');
-    if (fab) {
-        fab.addEventListener('click', () => {
-            scrollToSection('plant-tree');
-        });
-    }
-    
-    // Scroll to top button
-    const scrollToTop = document.getElementById('scrollToTop');
-    if (scrollToTop) {
-        scrollToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-    
-    // Scroll visibility for scroll-to-top button
-    window.addEventListener('scroll', () => {
-        if (scrollToTop) {
-            if (window.scrollY > 300) {
-                scrollToTop.classList.add('visible');
-            } else {
-                scrollToTop.classList.remove('visible');
-            }
-        }
-    });
-    
-    // Modal close on background click
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal(modal.id);
-            }
-        });
-    });
-    
-    // Escape key to close modals
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const activeModal = document.querySelector('.modal.active');
-            if (activeModal) {
-                closeModal(activeModal.id);
-            }
-        }
-    });
-}
-function handleAddTree(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const treeData = {
-        id: Date.now(),
-        species: formData.get('treeSpecies') || document.getElementById('treeSpecies').value,
-        planter: formData.get('planterName') || document.getElementById('planterName').value,
-        locationDesc: formData.get('locationDesc') || document.getElementById('locationDesc').value,
-        lat: parseFloat(document.getElementById('latitude').value),
-        lng: parseFloat(document.getElementById('longitude').value),
-        date: new Date().toISOString().split('T')[0],
-        native: ['Mango', 'Neem', 'Banyan'].includes(document.getElementById('treeSpecies').value),
-        type: 'new'
-    };
-    
-    // Validate data
-    if (!treeData.species || !treeData.planter || !treeData.lat || !treeData.lng) {
-        showNotification('Please fill all required fields', 'error');
-        return;
-    }
-    
-    // Add to global tree data
-    window.treeData = window.treeData || [];
-    window.treeData.push(treeData);
-    treeData.push(treeData);
-    
-    // Remove temporary marker
-    if (window.tempMarker) {
-        map.removeLayer(window.tempMarker);
-        window.tempMarker = null;
-    }
-    
-    // Add new marker to map
-    displayTreeMarkers();
-    updateMapStats();
-    
-    // Show success message
-    showNotification(`🌱 ${treeData.species} tree added successfully by ${treeData.planter}!`, 'success');
-    
-    // Close modal and reset form
-    closeModal('addTreeModal');
-    e.target.reset();
-    
-    // Animate to new tree location
-    map.setView([treeData.lat, treeData.lng], 15, { animate: true });
+[data-theme="dark"] .section-description,
+[data-theme="dark"] .hero-description,
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .event-description {
+  color: var(--text-secondary);
 }
 
-function handlePledgeSubmission(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const pledgeData = {
-        name: formData.get('pledgeName') || document.getElementById('pledgeName').value,
-        email: formData.get('pledgeEmail') || document.getElementById('pledgeEmail').value,
-        treeCount: formData.get('treeCount') || document.getElementById('treeCount').value,
-        area: formData.get('pledgeArea') || document.getElementById('pledgeArea').value,
-        message: formData.get('pledgeMessage') || document.getElementById('pledgeMessage').value
-    };
-    
-    // Simulate API call
-    showLoadingState(e.target);
-    
-    setTimeout(() => {
-        showNotification(`🤝 Thank you ${pledgeData.name}! Your pledge to plant ${pledgeData.treeCount} trees has been recorded.`, 'success');
-        e.target.reset();
-        hideLoadingState(e.target);
-        
-        // Trigger celebration animation
-        triggerCelebration();
-    }, 2000);
+[data-theme="dark"] h1, 
+[data-theme="dark"] h2, 
+[data-theme="dark"] h3, 
+[data-theme="dark"] h4, 
+[data-theme="dark"] h5, 
+[data-theme="dark"] h6 {
+  color: var(--text-primary);
 }
 
-function handleContactSubmission(e) {
-    e.preventDefault();
-    
-    showLoadingState(e.target);
-    
-    setTimeout(() => {
-        showNotification('📧 Thank you for your message! We\'ll get back to you soon.', 'success');
-        e.target.reset();
-        hideLoadingState(e.target);
-    }, 1500);
-}
-// =====================================================================
-// PLANT A TREE FORM HANDLERS
-// =====================================================================
-
-function handleIndividualPlanting(e) {
-    e.preventDefault();
-    
-    const formData = {
-        name: document.getElementById('individualName').value,
-        phone: document.getElementById('individualPhone').value,
-        species: document.getElementById('individualSpecies').value,
-        location: document.getElementById('individualLocation').value,
-        specificLocation: document.getElementById('individualSpecificLocation').value,
-        date: document.getElementById('individualDate').value,
-        notes: document.getElementById('individualNotes').value
-    };
-    
-    // Validate required fields
-    if (!formData.name || !formData.phone || !formData.species || !formData.location || !formData.date) {
-        showNotification('⚠️ Please fill all required fields', 'warning');
-        return;
-    }
-    
-    showLoadingState(e.target);
-    
-    setTimeout(() => {
-        console.log('Individual Planting Request:', formData);
-        showNotification(`🌱 Thank you ${formData.name}! Your tree planting request has been submitted. We'll contact you soon to confirm the details.`, 'success');
-        e.target.reset();
-        hideLoadingState(e.target);
-        closeModal('individualPlantModal');
-        triggerCelebration();
-    }, 2000);
+[data-theme="dark"] p {
+  color: var(--text-secondary);
 }
 
-function handleCommunityActionChange(e) {
-    const action = e.target.value;
-    const groupSizeGroup = document.getElementById('communityGroupSizeGroup');
-    const dateGroup = document.getElementById('communityDateGroup');
-    
-    if (action === 'organize') {
-        groupSizeGroup.style.display = 'block';
-        dateGroup.style.display = 'block';
-        document.getElementById('communityGroupSize').required = true;
-        document.getElementById('communityDate').required = true;
-    } else {
-        groupSizeGroup.style.display = 'none';
-        dateGroup.style.display = 'none';
-        document.getElementById('communityGroupSize').required = false;
-        document.getElementById('communityDate').required = false;
-    }
+/* Dark mode modal */
+[data-theme="dark"] .modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: var(--text-primary);
 }
 
-function handleCommunityDrive(e) {
-    e.preventDefault();
-    
-    const formData = {
-        name: document.getElementById('communityName').value,
-        email: document.getElementById('communityEmail').value,
-        phone: document.getElementById('communityPhone').value,
-        organization: document.getElementById('communityOrg').value,
-        action: document.getElementById('communityAction').value,
-        location: document.getElementById('communityLocation').value,
-        groupSize: document.getElementById('communityGroupSize').value,
-        date: document.getElementById('communityDate').value,
-        message: document.getElementById('communityMessage').value
-    };
-    
-    // Validate required fields
-    if (!formData.name || !formData.email || !formData.phone || !formData.action || !formData.location) {
-        showNotification('⚠️ Please fill all required fields', 'warning');
-        return;
-    }
-    
-    showLoadingState(e.target);
-    
-    setTimeout(() => {
-        console.log('Community Drive Request:', formData);
-        
-        const actionText = formData.action === 'join' ? 'joining' : 'organizing';
-        showNotification(`🤝 Thank you ${formData.name}! Your request for ${actionText} a community drive has been received. We'll be in touch shortly!`, 'success');
-        
-        e.target.reset();
-        hideLoadingState(e.target);
-        closeModal('communityDriveModal');
-        triggerCelebration();
-    }, 2000);
+[data-theme="dark"] .modal-header {
+  border-bottom-color: rgba(76, 175, 80, 0.3);
 }
 
-function handleCorporatePartnership(e) {
-    e.preventDefault();
-    
-    const formData = {
-        companyName: document.getElementById('corporateName').value,
-        contactPerson: document.getElementById('corporateContact').value,
-        email: document.getElementById('corporateEmail').value,
-        phone: document.getElementById('corporatePhone').value,
-        companySize: document.getElementById('corporateSize').value,
-        interest: document.getElementById('corporateInterest').value,
-        treeCount: document.getElementById('corporateTreeCount').value,
-        timeline: document.getElementById('corporateTimeline').value,
-        details: document.getElementById('corporateDetails').value
-    };
-    
-    // Validate required fields
-    if (!formData.companyName || !formData.contactPerson || !formData.email || !formData.phone || 
-        !formData.companySize || !formData.interest || !formData.treeCount || !formData.timeline) {
-        showNotification('⚠️ Please fill all required fields', 'warning');
-        return;
-    }
-    
-    // Validate minimum tree count
-    if (parseInt(formData.treeCount) < 50) {
-        showNotification('⚠️ Minimum tree count for corporate partnerships is 50 trees', 'warning');
-        return;
-    }
-    
-    showLoadingState(e.target);
-    
-    setTimeout(() => {
-        console.log('Corporate Partnership Request:', formData);
-        showNotification(`🏢 Thank you for your interest, ${formData.companyName}! Our partnership team will contact ${formData.contactPerson} within 24-48 hours to discuss your ${formData.treeCount}-tree initiative.`, 'success');
-        
-        e.target.reset();
-        hideLoadingState(e.target);
-        closeModal('corporatePartnershipModal');
-        triggerCelebration();
-    }, 2000);
-}
-// =====================================================================
-// NOTIFICATION SYSTEM
-// =====================================================================
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-message">${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    // Add notification styles if not present
-    if (!document.querySelector('#notification-styles')) {
-        const notificationStyles = document.createElement('style');
-        notificationStyles.id = 'notification-styles';
-        notificationStyles.textContent = `
-            .notification {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                min-width: 300px;
-                max-width: 500px;
-                padding: 0;
-                border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                z-index: 10001;
-                animation: slideInRight 0.3s ease-out;
-                overflow: hidden;
-            }
-            .notification-success { background: #4caf50; color: white; }
-            .notification-error { background: #f44336; color: white; }
-            .notification-info { background: #2196f3; color: white; }
-            .notification-warning { background: #ff9800; color: white; }
-            
-            .notification-content {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 16px 20px;
-            }
-            
-            .notification-message {
-                flex: 1;
-                font-weight: 500;
-            }
-            
-            .notification-close {
-                background: none;
-                border: none;
-                color: inherit;
-                cursor: pointer;
-                padding: 4px;
-                margin-left: 12px;
-                border-radius: 4px;
-                transition: background 0.2s ease;
-            }
-            
-            .notification-close:hover {
-                background: rgba(255,255,255,0.2);
-            }
-            
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(notificationStyles);
-    }
-    
-    document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.animation = 'slideInRight 0.3s ease-in reverse';
-            setTimeout(() => notification.remove(), 300);
-        }
-    }, 5000);
+/* Dark mode forms */
+[data-theme="dark"] .form-group label {
+  color: var(--text-primary);
 }
 
-// =====================================================================
-// LOADING STATES
-// =====================================================================
-
-function showLoadingState(form) {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    }
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-group textarea {
+  background: var(--bg-tertiary);
+  border-color: rgba(76, 175, 80, 0.3);
+  color: var(--text-primary);
 }
 
-function hideLoadingState(form) {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.disabled = false;
-        // Restore original button text based on form type
-        if (form.id === 'addTreeForm') {
-            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Tree';
-        } else if (form.classList.contains('pledge-form')) {
-            submitBtn.innerHTML = '<i class="fas fa-handshake"></i> Make Pledge';
-        } else {
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
-        }
-    }
+[data-theme="dark"] .form-group input::placeholder,
+[data-theme="dark"] .form-group textarea::placeholder {
+  color: var(--text-light);
 }
 
-// =====================================================================
-// SCROLL ANIMATIONS & PARALLAX
-// =====================================================================
-
-function initializeScrollAnimations() {
-    // Initialize AOS (Animate On Scroll)
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-cubic',
-            once: true,
-            offset: 50
-        });
-    }
-    
-    // Custom scroll animations
-    window.addEventListener('scroll', throttle(() => {
-        updateParallaxElements();
-        updateScrollProgress();
-    }, 16));
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus,
+[data-theme="dark"] .form-group textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
-function initializeParallaxEffects() {
-    const parallaxElements = document.querySelectorAll('.hero-visual, .floating-leaf');
-    
-    window.addEventListener('scroll', throttle(() => {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-        
-        parallaxElements.forEach(element => {
-            if (element.classList.contains('hero-visual')) {
-                element.style.transform = `translateY(${rate * 0.3}px)`;
-            } else if (element.classList.contains('floating-leaf')) {
-                const leafRate = rate * (0.1 + Math.random() * 0.2);
-                element.style.transform = `translateY(${leafRate}px)`;
-            }
-        });
-    }, 16));
+/* Dark mode feature icon circles */
+[data-theme="dark"] .feature-icon-circle {
+  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
 }
 
-function updateParallaxElements() {
-    const scrolled = window.pageYOffset;
-    
-    // Animate floating leaves based on scroll
-    document.querySelectorAll('.floating-leaf').forEach((leaf, index) => {
-        const speed = 0.5 + (index * 0.1);
-        const yPos = -(scrolled * speed);
-        leaf.style.transform = `translateY(${yPos}px) rotate(${scrolled * 0.1}deg)`;
-    });
-    
-    // Header blur effect
-    const header = document.querySelector('.header');
-    if (header) {
-        const blur = Math.min(scrolled / 100, 10);
-        header.style.backdropFilter = `blur(${blur}px)`;
-    }
+/* Dark mode contact details */
+[data-theme="dark"] .contact-details h4 {
+  color: var(--primary-light);
 }
 
-function updateScrollProgress() {
-    const scrolled = window.pageYOffset;
-    const maxHeight = document.body.scrollHeight - window.innerHeight;
-    const progress = (scrolled / maxHeight) * 100;
-    
-    // Update a progress bar if it exists
-    const progressBar = document.querySelector('.scroll-progress');
-    if (progressBar) {
-        progressBar.style.width = `${progress}%`;
-    }
+[data-theme="dark"] .contact-details p {
+  color: var(--text-secondary);
 }
 
-// =====================================================================
-// MAGNETIC BUTTONS & INTERACTIVE EFFECTS
-// =====================================================================
-
-function initializeMagneticButtons() {
-    const magneticElements = document.querySelectorAll('.btn, .fab, .nav-link');
-    
-    magneticElements.forEach(element => {
-        element.addEventListener('mousemove', (e) => {
-            const rect = element.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            
-            const moveX = x * 0.1;
-            const moveY = y * 0.1;
-            
-            element.style.transform = `translate(${moveX}px, ${moveY}px)`;
-        });
-        
-        element.addEventListener('mouseleave', () => {
-            element.style.transform = 'translate(0, 0)';
-        });
-    });
+/* Dark mode event content */
+[data-theme="dark"] .event-content h3 {
+  color: var(--primary-light);
 }
 
-function initializeFloatingElements() {
-    // Enhanced floating animation for particles
-    const particles = document.querySelectorAll('.particle');
-    
-    particles.forEach((particle, index) => {
-        const randomDelay = Math.random() * 2;
-        const randomDuration = 3 + Math.random() * 2;
-        
-        particle.style.animationDelay = `${randomDelay}s`;
-        particle.style.animationDuration = `${randomDuration}s`;
-        
-        // Add random movement
-        setInterval(() => {
-            const randomX = (Math.random() - 0.5) * 20;
-            const randomY = (Math.random() - 0.5) * 20;
-            particle.style.transform = `translate(${randomX}px, ${randomY}px)`;
-        }, 3000 + Math.random() * 2000);
-    });
+[data-theme="dark"] .event-location {
+  color: var(--text-secondary);
 }
 
-function initializeProgressBars() {
-    const progressBars = document.querySelectorAll('.stat-bar');
-    
-    const progressObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !entry.target.dataset.animated) {
-                const width = entry.target.dataset.width;
-                setTimeout(() => {
-                    entry.target.style.width = width;
-                    entry.target.dataset.animated = 'true';
-                }, 500);
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    progressBars.forEach(bar => {
-        progressObserver.observe(bar);
-    });
+/* Dark mode pledge visual */
+[data-theme="dark"] .pledge-visual {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
-// =====================================================================
-// CELEBRATION EFFECTS
-// =====================================================================
-
-function triggerCelebration() {
-    // Create confetti effect
-    const colors = ['#228B22', '#4caf50', '#f9b233', '#00bcd4'];
-    const confettiCount = 50;
-    
-    for (let i = 0; i < confettiCount; i++) {
-        createConfetti(colors[Math.floor(Math.random() * colors.length)]);
-    }
-    
-    // Play success sound (if available)
-    playSuccessSound();
+[data-theme="dark"] .pledge-impact h3 {
+  color: var(--primary-light);
 }
 
-function createConfetti(color) {
-    const confetti = document.createElement('div');
-    confetti.style.cssText = `
-        position: fixed;
-        width: 10px;
-        height: 10px;
-        background: ${color};
-        left: ${Math.random() * 100}vw;
-        top: -10px;
-        z-index: 10000;
-        pointer-events: none;
-        border-radius: 50%;
-    `;
-    
-    document.body.appendChild(confetti);
-    
-    // Animate confetti falling
-    const animation = confetti.animate([
-        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-        { transform: `translateY(100vh) rotate(720deg)`, opacity: 0 }
-    ], {
-        duration: 3000 + Math.random() * 2000,
-        easing: 'cubic-bezier(0.5, 0, 0.5, 1)'
-    });
-    
-    animation.onfinish = () => confetti.remove();
+[data-theme="dark"] .metric-label {
+  color: var(--text-secondary);
 }
 
-function playSuccessSound() {
-    // Create audio context for success sound
-    if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-        const audioContext = new (AudioContext || webkitAudioContext)();
-        
-        // Simple success tone
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-        
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-    }
+/* Dark mode stats */
+[data-theme="dark"] .stat-number {
+  color: var(--primary-light);
 }
 
-// =====================================================================
-// UTILITY FUNCTIONS
-// =====================================================================
-
-function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        const headerHeight = document.querySelector('.header').offsetHeight;
-        const targetPosition = section.offsetTop - headerHeight - 20;
-        
-        window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
-        });
-    }
+/* Dark mode footer */
+[data-theme="dark"] .footer {
+  background: #0a1f0a;
 }
 
-function throttle(func, limit) {
-    let inThrottle;
-    return function() {
-        const args = arguments;
-        const context = this;
-        if (!inThrottle) {
-            func.apply(context, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    }
+[data-theme="dark"] .footer-section h4 {
+  color: var(--primary-light);
+}
+/* Loading Screen (FINAL, CLEANED CSS) */
+
+.tree-animation {
+  position: relative;
+  width: 60px;
+  height: 80px;
+  margin: 0 auto 20px;
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+.trunk {
+  width: 8px;
+  height: 60px;
+  background: #8B4513;
+  border-radius: 4px;
+  animation: growTrunk 1s ease-out;
+  position: absolute;
+  bottom: 0; /* Changed from top to bottom */
+  left: 50%;
+  margin-left: -4px;
 }
 
-// =====================================================================
-// MAP INTERACTION FUNCTIONS
-// =====================================================================
-
-function viewTreeDetails(treeId) {
-    const tree = treeData.find(t => t.id === treeId);
-    if (!tree) return;
-    
-    const detailsHtml = `
-        <div class="tree-details-popup">
-            <h2>🌳 ${tree.species} Tree Details</h2>
-            <div class="details-grid">
-                <div class="detail-item">
-                    <label>Species:</label>
-                    <span>${tree.species} ${tree.native ? '(Native)' : ''}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Planted by:</label>
-                    <span>${tree.planter}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Planted on:</label>
-                    <span>${new Date(tree.date).toLocaleDateString('en-IN')}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Age:</label>
-                    <span>${Math.floor((new Date() - new Date(tree.date)) / (1000 * 60 * 60 * 24))} days</span>
-                </div>
-                <div class="detail-item">
-                    <label>Coordinates:</label>
-                    <span>${tree.lat.toFixed(6)}, ${tree.lng.toFixed(6)}</span>
-                </div>
-                <div class="detail-item">
-                    <label>CO₂ Absorbed:</label>
-                    <span>~${(Math.floor((new Date() - new Date(tree.date)) / (1000 * 60 * 60 * 24)) * 0.06).toFixed(1)} kg</span>
-                </div>
-            </div>
-            <div class="detail-actions">
-                <button onclick="closeTreeDetails()" class="btn btn-secondary">Close</button>
-                <button onclick="shareTree(${treeId})" class="btn btn-primary">Share Tree</button>
-            </div>
-        </div>
-    `;
-    
-    // Create modal-like overlay
-    const overlay = document.createElement('div');
-    overlay.id = 'tree-details-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.7);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: fadeIn 0.3s ease;
-    `;
-    
-    overlay.innerHTML = detailsHtml;
-    document.body.appendChild(overlay);
-    
-    /* Add styles for details popup
-    if (!document.querySelector('#tree-details-styles')) {
-        const detailStyles = document.createElement('style');
-        detailStyles.id = 'tree-details-styles';
-        detailStyles.textContent = `
-            .tree-details-popup {
-                background: white;
-                border-radius: 16px;
-                padding: 24px;
-                max-width: 500px;
-                width: 90%;
-                max-height: 80vh;
-                overflow-y: auto;
-                animation: slideUp 0.3s ease;
-            }
-            .tree-details-popup h2 {
-                color: #228B22;
-                margin-bottom: 20px;
-                text-align: center;
-            }
-            .details-grid {
-                display: grid;
-                gap: 12px;
-                margin-bottom: 20px;
-            }
-            .detail-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 8px 0;
-                border-bottom: 1px solid #eee;
-            }
-            .detail-item label {
-                font-weight: 600;
-                color: #333;
-            }
-            .detail-item span {
-                color: #666;
-            }
-            .detail-actions {
-                display: flex;
-                gap: 12px;
-                justify-content: center;
-            }
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            @keyframes slideUp {
-                from { transform: translateY(30px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(detailStyles);
-    }
-    
-    // Close on overlay click
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            closeTreeDetails();
-        }
-    });
-    */
+.leaves {
+  width: 50px;
+  height: 50px;
+  background: #32CD32;
+  border-radius: 50%;
+  animation: growLeaves 1s ease-out 0.5s both;
+  position: absolute;
+  top: 0; /* Changed from 15px to 0 */
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-function closeTreeDetails() {
-    const overlay = document.getElementById('tree-details-overlay');
-    if (overlay) {
-        overlay.style.animation = 'fadeIn 0.3s ease reverse';
-        setTimeout(() => overlay.remove(), 300);
-    }
+@keyframes growTrunk {
+  from { height: 0; }
+  to { height: 30px; }
 }
 
-function shareTree(treeId) {
-    const tree = treeData.find(t => t.id === treeId);
-    if (!tree) return;
-    
-    const shareText = `🌱 Check out this ${tree.species} tree planted by ${tree.planter} in Mumbai! 
-🗓️ Planted: ${new Date(tree.date).toLocaleDateString('en-IN')}
-📍 Location: ${tree.lat.toFixed(4)}, ${tree.lng.toFixed(4)}
-🌍 #GreenMumbai #TreePlantation #GreenRoots`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: `${tree.species} Tree - GreenRoots`,
-            text: shareText,
-            url: window.location.href + `?tree=${treeId}`
-        }).catch(console.error);
-    } else {
-        // Fallback: copy to clipboard
-        navigator.clipboard.writeText(shareText).then(() => {
-            showNotification('🔗 Tree details copied to clipboard!', 'success');
-        }).catch(() => {
-            // Further fallback: show share modal
-            showShareModal(shareText);
-        });
-    }
-}
-
-function showShareModal(text) {
-    const modal = document.createElement('div');
-    modal.innerHTML = `
-        <div class="share-modal">
-            <h3>Share Tree</h3>
-            <textarea readonly>${text}</textarea>
-            <div class="share-buttons">
-                <button onclick="copyToClipboard('${text.replace(/'/g, "\\'")}')">Copy Text</button>
-                <button onclick="this.parentElement.parentElement.parentElement.remove()">Close</button>
-            </div>
-        </div>
-    `;
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.7);
-        z-index: 10001;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `;
-    document.body.appendChild(modal);
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('📋 Copied to clipboard!', 'success');
-    });
-}
-
-// =====================================================================
-// ACCESSIBILITY ENHANCEMENTS
-// =====================================================================
-
-function initializeAccessibility() {
-    // Skip link for keyboard navigation
-    const skipLink = document.createElement('a');
-    skipLink.href = '#main-content';
-    skipLink.textContent = 'Skip to main content';
-    skipLink.className = 'skip-link';
-    skipLink.style.cssText = `
-        position: absolute;
-        top: -40px;
-        left: 6px;
-        background: #228B22;
-        color: white;
-        padding: 8px;
-        text-decoration: none;
-        border-radius: 4px;
-        z-index: 10000;
-        transition: top 0.3s;
-    `;
-    
-    skipLink.addEventListener('focus', () => {
-        skipLink.style.top = '6px';
-    });
-    
-    skipLink.addEventListener('blur', () => {
-        skipLink.style.top = '-40px';
-    });
-    
-    document.body.insertBefore(skipLink, document.body.firstChild);
-    
-    // Add main content landmark
-    const heroSection = document.querySelector('.hero');
-    if (heroSection) {
-        heroSection.id = 'main-content';
-        heroSection.setAttribute('tabindex', '-1');
-    }
-}
-
-// =====================================================================
-// PERFORMANCE MONITORING
-// =====================================================================
-
-function initializePerformanceMonitoring() {
-    // Monitor loading performance
-    window.addEventListener('load', () => {
-        if ('performance' in window) {
-            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-            console.log(`🚀 Page loaded in ${loadTime}ms`);
-            
-            // Report if loading is slow
-            if (loadTime > 3000) {
-                console.warn('⚠️ Slow page load detected. Consider optimization.');
-            }
-        }
-    });
-    
-    // Monitor scroll performance
-    let scrollCount = 0;
-    const scrollMonitor = throttle(() => {
-        scrollCount++;
-        if (scrollCount % 100 === 0) {
-            console.log(`📊 Scroll events handled: ${scrollCount}`);
-        }
-    }, 100);
-    
-    window.addEventListener('scroll', scrollMonitor);
-}
-
-// =====================================================================
-// INITIALIZE ACCESSIBILITY AND PERFORMANCE
-// =====================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        initializeAccessibility();
-        initializePerformanceMonitoring();
-    }, 1000);
-});
-
-// =====================================================================
-// EXPORT FUNCTIONS FOR GLOBAL ACCESS
-// =====================================================================
-
-// Make functions globally available
-window.GreenRoots = {
-    openModal,
-    closeModal,
-    scrollToSection,
-    viewTreeDetails,
-    shareTree,
-    showNotification,
-    triggerCelebration
-};
-
-// =====================================================================
-// EVENT REGISTRATION FUNCTIONALITY
-// =====================================================================
-
-const eventDetails = {
-  'mumbai-monsoon': {
-    title: 'Mumbai Monsoon Plantation',
-    date: '15th November 2024',
-    location: 'Sanjay Gandhi National Park',
-    time: '7:00 AM - 12:00 PM'
-  },
-  'corporate-green': {
-    title: 'Corporate Green Initiative',
-    date: '22nd November 2024',
-    location: 'BKC Business District',
-    time: '8:00 AM - 1:00 PM'
+@keyframes growLeaves {
+  from {
+    transform: scale(0) translateX(-50%);
+    opacity: 0;
   }
-};
-
-function openEventRegistration(eventId) {
-  const event = eventDetails[eventId];
-  if (!event) return;
-  
-  // Set event details
-  document.getElementById('eventTitle').textContent = event.title;
-  document.getElementById('eventId').value = eventId;
-  
-  // Create info banner
-  const banner = document.getElementById('eventInfoBanner');
-  banner.innerHTML = `
-    <strong>${event.title}</strong>
-    <div style="margin-top: 0.5rem; display: grid; gap: 0.25rem;">
-      <span><i class="fas fa-calendar"></i> ${event.date}</span>
-      <span><i class="fas fa-map-marker-alt"></i> ${event.location}</span>
-      <span><i class="fas fa-clock"></i> ${event.time}</span>
-    </div>
-  `;
-  
-  openModal('eventRegistrationModal');
+  to {
+    transform: scale(1) translateX(-50%);
+    opacity: 1;
+  }
+}
+.loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
-// Add event registration form handler to initialization
-const eventRegistrationForm = document.getElementById('eventRegistrationForm');
-if (eventRegistrationForm) {
-  eventRegistrationForm.addEventListener('submit', handleEventRegistration);
+.loading-content {
+  text-align: center;
+  color: white;
+}
+/* Loading Screen (FIXED TREE ANIMATION) */
+
+/* ... (previous styles) ... */
+/* Loading Screen (FIXED TREE CONNECTION) */
+
+
+.loading-bar {
+  width: 200px;
+  height: 4px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 20px;
 }
 
-function handleEventRegistration(e) {
-  e.preventDefault();
-  
-  const formData = {
-    eventId: document.getElementById('eventId').value,
-    name: document.getElementById('eventName').value,
-    email: document.getElementById('eventEmail').value,
-    phone: document.getElementById('eventPhone').value,
-    age: document.getElementById('eventAge').value,
-    participants: document.getElementById('eventParticipants').value,
-    tshirt: document.getElementById('eventTshirt').value,
-    source: document.getElementById('eventSource').value,
-    message: document.getElementById('eventMessage').value,
-    termsAccepted: document.getElementById('eventTerms').checked
-  };
-  
-  const event = eventDetails[formData.eventId];
-  
-  if (!formData.termsAccepted) {
-    showNotification('⚠️ Please accept the terms and conditions', 'warning');
-    return;
+.loading-progress {
+  height: 100%;
+  background: white;
+  width: 0;
+  border-radius: 2px;
+  animation: loadingProgress 2s ease-in-out;
+}
+
+@keyframes loadingProgress {
+  0% { width: 0; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: var(--shadow-heavy);
+  z-index: 1000;
+  transition: var(--transition);
+  animation: fabPulse 2s infinite;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 40px rgba(34, 139, 34, 0.4);
+}
+
+.fab-tooltip {
+  position: absolute;
+  right: 70px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+
+.fab:hover .fab-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes fabPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Animated Background */
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.floating-leaf {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--primary-color);
+  border-radius: 0 100% 0 100%;
+  opacity: 0.1;
+  animation: floatLeaf 10s infinite linear;
+}
+
+.leaf-1 { 
+  left: 10%; 
+  animation-delay: 0s; 
+  animation-duration: 8s;
+}
+.leaf-2 { 
+  left: 30%; 
+  animation-delay: 2s; 
+  animation-duration: 12s;
+}
+.leaf-3 { 
+  left: 60%; 
+  animation-delay: 4s; 
+  animation-duration: 10s;
+}
+.leaf-4 { 
+  left: 80%; 
+  animation-delay: 6s; 
+  animation-duration: 9s;
+}
+
+@keyframes floatLeaf {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.1;
+  }
+  90% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Header Styles */
+.header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 1000;
+  transition: var(--transition);
+}
+
+.navbar {
+  padding: 1rem 0;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.nav-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-icon {
+  font-size: 2.5rem;
+  animation: logoRotate 3s ease-in-out infinite;
+}
+
+@keyframes logoRotate {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid var(--border-color);
+}
+
+.theme-toggle:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: rotate(180deg);
+}
+
+.profile-icon {
+  font-size: 2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.profile-icon:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: var(--transition);
+  z-index: -1;
+}
+
+.nav-link:hover::before {
+  left: 0;
+}
+
+.nav-link:hover {
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Hero Section */
+.hero {
+  padding: 6rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.hero-content {
+  z-index: 2;
+}
+
+.quote-container {
+  margin-bottom: 2rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.quote-mark {
+  color: var(--secondary-color);
+  font-size: 4rem;
+  opacity: 0.8;
+}
+
+.typewriter {
+  border-right: 3px solid var(--primary-color);
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { border-color: var(--primary-color); }
+  51%, 100% { border-color: transparent; }
+}
+
+.hero-author {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: right;
+  margin-top: 1rem;
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 3rem;
+  max-width: 500px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.tree-illustration {
+  position: relative;
+  width: 200px;
+  height: 300px;
+}
+
+.tree-trunk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 100px;
+  background: linear-gradient(to bottom, #8B4513, #654321);
+  border-radius: 15px;
+  animation: growUp 2s ease-out;
+}
+
+.tree-crown {
+  position: absolute;
+  bottom: 80px; /* move crown so it sits right above the trunk */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 160px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  animation: growCrown 2s ease-out 0.5s both;
+}
+
+
+@keyframes growUp {
+  from { height: 0; }
+  to { height: 100px; }
+}
+
+@keyframes growCrown {
+  from { 
+    transform: translateX(-50%) scale(0); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(-50%) scale(1); 
+    opacity: 1; 
+  }
+}
+
+.floating-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--secondary-color);
+  border-radius: 50%;
+  animation: floatParticle 3s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
+.particle:nth-child(2) { top: 30%; right: 20%; animation-delay: 0.5s; }
+.particle:nth-child(3) { top: 40%; left: 10%; animation-delay: 1s; }
+.particle:nth-child(4) { top: 50%; right: 10%; animation-delay: 1.5s; }
+.particle:nth-child(5) { top: 60%; left: 30%; animation-delay: 2s; }
+
+@keyframes floatParticle {
+  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.7; }
+  50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* Ripple Effect */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple-effect:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Section Styles */
+section {
+  padding: 4rem 0;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.section-divider {
+  width: 60px;
+  height: 4px;
+  background: var(--gradient-primary);
+  margin: 0 auto 1rem;
+  border-radius: 2px;
+}
+
+.section-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Stats Section */
+.stats-section {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 3rem 2rem;
+  margin: 2rem 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  box-shadow: var(--shadow-light);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-medium);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.stat-progress {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 3px;
+  width: 0;
+  transition: width 2s ease-out;
+}
+
+/* Mission Section */
+
+.mission-section {
+  padding: 4rem 0;
+  background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e9 50%, #f1f8f4 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add subtle pattern overlay */
+.mission-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(34, 139, 34, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+
+.mission-description {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.features-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.feature-item:hover {
+  transform: translateX(10px);
+  background: white;
+  box-shadow: var(--shadow-light);
+}
+
+.feature-item i {
+  color: white;
+  font-size: 1rem;
+}
+
+.feature-icon-circle {
+  width: 45px;
+  height: 45px;
+  min-width: 45px;
+  background: linear-gradient(135deg, #228B22, #4caf50);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(34, 139, 34, 0.3);
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover .feature-icon-circle {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 0 6px 15px rgba(34, 139, 34, 0.5);
+}
+
+.feature-item span {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.mission-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.impact-chart {
+  width: 300px;
+  height: 300px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-medium);
+  position: relative;
+}
+/* Mission Image Styling - COMPLETE FIX */
+.mission-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: stretch; 
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.mission-image {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(34, 139, 34, 0.3);
+  transition: all 0.4s ease;
+  width: 100%;
+  height: 100%; /* ADDED */
+  min-height: 500px; /* ADDED */
+}
+
+.mission-image:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 50px rgba(34, 139, 34, 0.4);
+}
+
+.mission-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  object-position: center; 
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.mission-image:hover img {
+  transform: scale(1.05);
+}
+
+.image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(34, 139, 34, 0.9), transparent);
+  padding: 2rem;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.mission-image:hover .image-overlay {
+  opacity: 1;
+}
+
+.overlay-text {
+  text-align: center;
+  color: white;
+}
+
+.overlay-text i {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  animation: bounce 2s infinite;
+}
+
+.overlay-text p {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.mission-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Dark mode support for mission image */
+[data-theme="dark"] .mission-image {
+  box-shadow: 0 10px 40px rgba(76, 175, 80, 0.4);
+}
+
+[data-theme="dark"] .mission-image:hover {
+  box-shadow: 0 15px 50px rgba(76, 175, 80, 0.5);
+}
+
+[data-theme="dark"] .image-overlay {
+  background: linear-gradient(to top, rgba(46, 125, 50, 0.95), transparent);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .mission-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .mission-content {
+    gap: 2rem;
   }
   
-  showLoadingState(e.target);
+  .image-overlay {
+    padding: 1.5rem;
+  }
   
-  setTimeout(() => {
-    console.log('Event Registration:', formData);
-    showNotification(
-      `🎉 Success! ${formData.name}, you're registered for ${event.title}! Check your email for confirmation and event details.`,
-      'success'
-    );
-    
-    e.target.reset();
-    hideLoadingState(e.target);
-    closeModal('eventRegistrationModal');
-    triggerCelebration();
-  }, 2000);
+  .overlay-text i {
+    font-size: 2rem;
+  }
+  
+  .overlay-text p {
+    font-size: 1rem;
+  }
 }
 
-// Update the existing initializeEventListeners function to include this
 
-console.log('🌱 GreenRoots Enhanced JavaScript Loaded Successfully!');
+.mission-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+
+.mission-text {
+  order: 1;
+}
+
+.mission-image {
+  order: 2;
+}
+
+/* Map Section */
+.map-section {
+  padding: 4rem 0;
+}
+
+.map-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.control-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 600;
+}
+
+.control-btn.active,
+.control-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.map-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.map-stat {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.map-container {
+  position: relative;
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+}
+
+.interactive-map {
+  height: 500px;
+  width: 100%;
+}
+
+.map-legend {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  z-index: 1000;
+}
+
+.map-legend h4 {
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.legend-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.new-tree { background: var(--success-color); }
+.mature-tree { background: var(--primary-color); }
+.native-tree { background: var(--secondary-color); }
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: white;
+  padding: 0;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.8);
+  transition: var(--transition);
+}
+
+.modal.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.modal-close:hover {
+  color: var(--error-color);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.coord-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* Plant Section */
+.plant-section {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 4rem 2rem;
+  margin: 2rem 0;
+}
+
+.plant-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.plant-card {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  box-shadow: var(--shadow-light);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.plant-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.plant-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+.plant-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+}
+
+.plant-card h3 {
+  font-size: 1.3rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.plant-card p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+/* Events Section */
+.events-section {
+  padding: 4rem 0;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.event-card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  overflow: hidden;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-medium);
+}
+
+.event-date {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  min-width: 80px;
+}
+
+.event-date .day {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.event-date .month {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.event-content {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.event-content h3 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.event-location {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.event-participants {
+  margin-bottom: 1rem;
+}
+
+.participant-avatars {
+  display: flex;
+  gap: -0.5rem;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  border: 2px solid white;
+  margin-left: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: white;
+  font-weight: 600;
+}
+
+.avatar.more {
+  background: var(--text-secondary);
+}
+
+/* Pledge Section */
+.pledge-section {
+  padding: 4rem 0;
+}
+
+.pledge-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.pledge-form {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+}
+
+.pledge-visual {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+}
+
+.pledge-impact h3 {
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.impact-metrics {
+  display: grid;
+  gap: 1rem;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+}
+
+.metric i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  width: 30px;
+}
+
+.metric-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Contact Section */
+.contact-section {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 4rem 2rem;
+  margin: 2rem 0;
+}
+
+.contact-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+}
+
+.contact-info {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  transition: var(--transition);
+}
+
+.contact-item:hover {
+  transform: translateX(10px);
+}
+
+.contact-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.contact-details h4 {
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+}
+
+.contact-details p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.social-link {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.social-link:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-light);
+}
+
+.contact-form {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+}
+
+/* Footer */
+.footer {
+  background: var(--primary-color);
+  color: white;
+  padding: 3rem 0 1rem;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.footer-section h4 {
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.footer-logo i {
+  font-size: 2rem;
+}
+
+.footer-section p {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.footer-section ul {
+  list-style: none;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-section ul li a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.footer-section ul li a:hover {
+  color: white;
+  transform: translateX(5px);
+}
+
+.footer-social {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.footer-social a {
+  width: 35px;
+  height: 35px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.footer-social a:hover {
+  background: white;
+  color: var(--primary-color);
+  transform: translateY(-3px);
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  placeholder-color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter-form input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter-form button {
+  padding: 0.6rem;
+  background: var(--secondary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.newsletter-form button:hover {
+  background: var(--secondary-dark);
+  transform: scale(1.05);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Scroll to Top */
+.scroll-to-top {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+  z-index: 1000;
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scroll-to-top:hover {
+  background: var(--primary-dark);
+  transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .mission-content,
+  .pledge-container,
+  .contact-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 1rem;
+  }
+  
+  .nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .hero {
+    padding: 3rem 1rem;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .plant-options,
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .map-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .control-group {
+    justify-content: center;
+  }
+  
+  .map-stats {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-top {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .nav-links {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .fab {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .scroll-to-top {
+    bottom: 80px;
+    right: 20px;
+  }
+}
+
+/* AOS Animation Overrides */
+[data-aos="fade-up"] {
+  transform: translate3d(0, 40px, 0);
+}
+
+[data-aos="fade-right"] {
+  transform: translate3d(-40px, 0, 0);
+}
+
+[data-aos="fade-left"] {
+  transform: translate3d(40px, 0, 0);
+}
+
+[data-aos="zoom-in"] {
+  transform: scale(0.8);
+}
+
+[data-aos="flip-left"] {
+  transform: perspective(400px) rotate3d(0, 1, 0, -100deg);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Selection Color */
+::selection {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Focus Outline */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Plant a Tree Modal Enhancements */
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-body {
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+}
+
+/* Form enhancements for plant modals */
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Textarea styling */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* Date input styling */
+input[type="date"] {
+  cursor: pointer;
+}
+
+/* Number input styling */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Modal animation improvements */
+.modal.active .modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+/* Enhanced Event Cards */
+.event-card {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(34, 139, 34, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.event-card:hover::before {
+  left: 100%;
+}
+
+.event-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 30px rgba(34, 139, 34, 0.2);
+  transform: translateY(-8px);
+}
+
+.event-card .btn {
+  width: 100%;
+  margin: 1rem;
+  justify-content: center;
+}
+
+.event-content {
+  position: relative;
+  z-index: 1;
+}
+
+.event-date {
+  background: var(--gradient-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.event-date::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+/* Event Registration Modal Enhancements */
+.event-info-banner {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border-left: 4px solid var(--primary-color);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.event-info-banner strong {
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.checkbox-group {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Dark mode for event enhancements */
+[data-theme="dark"] .event-info-banner {
+  background: linear-gradient(135deg, #1e3a1e, #2d4a2d);
+  border-left-color: var(--primary-light);
+}
+
+[data-theme="dark"] .event-card {
+  border-color: rgba(76, 175, 80, 0.2);
+}
+
+[data-theme="dark"] .event-card:hover {
+  border-color: var(--primary-light);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .event-card .btn {
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+  }
+}
+/* ===========================
+   PROFILE MODAL STYLES
+   =========================== */
+
+.profile-modal-content {
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.profile-header {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 12px 12px 0 0;
+}
+
+.profile-body {
+  padding: 30px;
+  background: var(--bg-primary);
+}
+.profile-avatar {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.avatar-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+  margin: 0 auto 15px;
+  box-shadow: var(--shadow-medium);
+  border: 5px solid var(--bg-primary);
+}
+
+.profile-name {
+  font-size: 2em;
+  color: var(--primary-color);
+  margin: 10px 0 5px;
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.profile-info-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border-left: 4px solid var(--primary-color);
+  transition: var(--transition);
+}
+
+.profile-info-item:hover {
+  transform: translateX(5px);
+  box-shadow: var(--shadow-light);
+}
+
+.info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.info-content label {
+  display: block;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+.info-content p {
+  font-size: 1em;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.highlight-number {
+  color: var(--primary-color);
+  font-size: 1.1em !important;
+}
+
+.profile-stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.stat-card-small {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: var(--shadow-medium);
+}
+
+.stat-card-small i {
+  font-size: 2em;
+  opacity: 0.9;
+}
+
+.stat-info h4 {
+  font-size: 1.5em;
+  margin: 0 0 5px 0;
+}
+
+.stat-info p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9em;
+}
+
+.profile-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.profile-section h4 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2em;
+}
+
+.planting-history {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  border-left: 4px solid var(--primary-color);
+  transition: var(--transition);
+}
+
+.history-item:hover {
+  transform: translateX(5px);
+  box-shadow: var(--shadow-light);
+}
+
+.history-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.history-icon.new {
+  background: #4caf50;
+  color: white;
+}
+
+.history-icon.mature {
+  background: #228B22;
+  color: white;
+}
+
+.history-details h5 {
+  margin: 0 0 5px 0;
+  color: var(--text-primary);
+  font-size: 1.1em;
+}
+
+.history-details p {
+  margin: 0 0 5px 0;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+.history-details .date {
+  font-size: 0.85em;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.all-time-stats {
+  margin-bottom: 20px;
+}
+
+.timeline-stat {
+  padding: 15px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+}
+
+.timeline-year {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.timeline-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 15px;
+}
+
+.data-point {
+  text-align: center;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.data-point .label {
+  display: block;
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.data-point .value {
+  display: block;
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.achievement-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: var(--gradient-secondary);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 600;
+  box-shadow: var(--shadow-light);
+}
+
+.badge i {
+  font-size: 1.1em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-modal-content {
+    max-width: 95%;
+  }
+  
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-stats-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .timeline-data {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* Dark mode profile fixes */
+[data-theme="dark"] .profile-modal-content {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .profile-body {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .profile-info-item {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .history-item {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .timeline-stat {
+  background: var(--bg-tertiary);
+}
